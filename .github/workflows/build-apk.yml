@@ -42,14 +42,14 @@ jobs:
           
           # Fetch the latest version from the official site using Python
           # Using the same logic as prepare-latest-lucky.sh but simplified
-          LATEST_TAG=$(python3 -c "
-          import urllib.request, re
+          LATEST_TAG=$(curl -fsSL --connect-timeout 15 --retry 5 --retry-delay 3 "https://release.66666.host/" | python3 -c "
+          import sys, re
           try:
-              html = urllib.request.urlopen('https://release.66666.host/').read().decode('utf-8')
+              html = sys.stdin.read()
               tags = re.findall(r'v\d+\.\d+\.\d+(?:beta\d+)?', html)
               if not tags:
                   raise SystemExit('No tags found')
-                  
+
               versions = []
               for tag in set(tags):
                   match = re.match(r'^v(\d+)\.(\d+)\.(\d+)(?:beta(\d+))?$', tag)
@@ -58,10 +58,10 @@ jobs:
                       stable_rank = 1 if beta is None else 0
                       beta_number = int(beta or 0)
                       versions.append(((int(major), int(minor), int(patch), stable_rank, beta_number), tag))
-              
+
               if not versions:
                   raise SystemExit('No valid versions found')
-                  
+
               print(max(versions)[1])
           except Exception as e:
               print(f'Error fetching latest version: {e}')
