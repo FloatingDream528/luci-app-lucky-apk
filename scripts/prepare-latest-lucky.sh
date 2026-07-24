@@ -88,15 +88,14 @@ upstream_version="${upstream_version%_Linux_${CORE_ARCH}.tar.gz}"
 package_version="${latest_tag#v}"
 package_version="${package_version/beta/_beta}"
 source_url="${RELEASE_ROOT}/${release_dir}/${source_file}"
-tmp_file="$(mktemp)"
 
-cleanup() {
-	rm -f "$tmp_file"
-}
-trap cleanup EXIT
+# 保存到 dl/ 目录，以便 OpenWrt SDK 构建时直接使用本地缓存，避免远程下载超时
+mkdir -p "$REPO_ROOT/dl"
+target_file="$REPO_ROOT/dl/$source_file"
 
-curl --connect-timeout 10 --retry 3 --retry-delay 2 -fsSL "$source_url" -o "$tmp_file"
-source_hash="$(sha256sum "$tmp_file" | awk '{ print $1 }')"
+echo "正在下载 Lucky 核心包到 dl/ 目录..."
+curl --connect-timeout 15 --retry 5 --retry-delay 3 -fsSL "$source_url" -o "$target_file"
+source_hash="$(sha256sum "$target_file" | awk '{ print $1 }')"
 
 export PACKAGE_VERSION="$package_version"
 export UPSTREAM_VERSION="$upstream_version"
