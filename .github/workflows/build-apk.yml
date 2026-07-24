@@ -70,9 +70,8 @@ jobs:
           
           echo "Latest official version: $LATEST_TAG"
           
-          # Fetch the latest release tag from our GitHub repository
-          # Using gh api to suppress errors if no releases exist yet
-          CURRENT_TAG=$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name 2>/dev/null || echo "none")
+          # Fetch the latest release tag (including pre-releases) from our GitHub repository
+          CURRENT_TAG=$(gh api repos/${{ github.repository }}/releases --jq '.[0].tag_name' 2>/dev/null || echo "none")
           echo "Current GitHub release: $CURRENT_TAG"
           
           # Format the official tag to match our repository's tag format (lucky-x.x.x)
